@@ -106,7 +106,11 @@ class Admins extends CI_Controller {
       if ($this->isAdminHavePermission($functionName,$featureId)){
         $dataTitle['title'] = 'Configure New Server';
         $dataActive['page'] = 'new_server';
-
+//        $connection = connect_to_remote_server(1);
+//        $stream = ssh2_exec($connection, 'ls -la');
+//        $output = get_output_result_of_shell($stream);
+//        print_r($output);
+//        die();
         $this->load->view('admins/common/header',$dataTitle);
         $this->load->view('admins/common/head',$dataActive);
         $this->load->view('admins/newServer');
@@ -139,16 +143,16 @@ class Admins extends CI_Controller {
   }
   public function install_magento(){
     if($this->session->userdata('admin_data')){
-      $functionName = $this->uri->segment(2);
-      $featureId = $this->uri->segment(3);
-      if ($this->isAdminHavePermission($functionName,$featureId)){
-      $dataTitle['title'] = 'Configure New Server';
-      $dataActive['page'] = 'install_magento';
-
-      $this->load->view('admins/common/header',$dataTitle);
-      $this->load->view('admins/common/head',$dataActive);
-      $this->load->view('admins/installMagento');
-      $this->load->view('admins/common/footer');
+        $functionName = $this->uri->segment(2);
+        $featureId = $this->uri->segment(3);
+        if ($this->isAdminHavePermission($functionName,$featureId)){
+        $dataTitle['title'] = 'Configure New Server';
+        $dataActive['page'] = 'install_magento';
+        $data['server_details'] = $this->admins_model->get_result('server_credentials');
+        $this->load->view('admins/common/header',$dataTitle);
+        $this->load->view('admins/common/head',$dataActive);
+        $this->load->view('admins/installMagento',$data);
+        $this->load->view('admins/common/footer');
     } else {
       $this->load->view('admins/noPermission');
     }

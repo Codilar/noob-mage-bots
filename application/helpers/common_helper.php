@@ -40,6 +40,43 @@ if(!function_exists('is_permission_granted')){
 	}
 }
 
+if(!function_exists('connect_to_remote_server')){
+
+	function connect_to_remote_server($serverId){
+		$CI =& get_instance();
+		$serverDetails = $CI->admins_model->get_result('server_credentials', array('server_id'=>$serverId));
+		$connection = ssh2_connect($serverDetails[0]->server_ip, $serverDetails[0]->server_port);
+		ssh2_auth_password($connection, $serverDetails[0]->server_username, $serverDetails[0]->server_password);
+		return $connection;
+	}
+}
+
+if(!function_exists('get_output_result_of_shell')){
+
+	function get_output_result_of_shell($stream){
+//		$string = stream_get_contents($stream);
+		$errorStream = ssh2_fetch_stream($stream, SSH2_STREAM_STDERR);
+// Enable blocking for both streams
+		stream_set_blocking($errorStream, true);
+		stream_set_blocking($stream, true);
+// Whichever of the two below commands is listed first will receive its appropriate output.  The second command receives nothing
+		$response = '';
+		while($buffer = fread($stream, 4096)) {
+			$response .= '<br>'.$buffer;
+		}
+		$response = '';
+		while($buffer = fread($stream, 4096)) {
+			$response .= '<br>'.$buffer;
+		}
+
+// Close the streams
+		fclose($errorStream);
+		fclose($stream);
+		return $response;
+	}
+}
+
+
 
 
 

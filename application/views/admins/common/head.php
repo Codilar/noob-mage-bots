@@ -157,7 +157,7 @@ if (!$permissionList) {
                 <?php endif; ?>
                 <?php $featureId = is_permission_granted('website_analysis',$permissionList);
                 if ($featureId != null): ?>
-                    <li class="<?php if($page=='website_analysis'){echo "active";} ?>">
+                    <li class="<?php if($page=='admin_dashboard'){echo "active";} ?>">
                         <a href="<?php echo base_url() ?>admins/website_analysis/<?php echo $featureId?>"><i class="fa fa-fw fa-bar-chart-o"></i> Website Analysis</a>
                     </li>
                 <?php endif; ?>
