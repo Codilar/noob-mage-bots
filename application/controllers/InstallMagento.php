@@ -35,6 +35,8 @@ class InstallMagento extends CI_Controller {
         if ($this->form_validation->run() == true) {
           $selectMagentoVersion = $this->input->post('select_magento');
           $selectServer = $this->input->post('select_server');
+          $serverDetails = $this->admins_model->get_result('server_credentials', array('server_id'=>$selectServer));
+          $mySQLPassword = $serverDetails[0]->database_password;
           $connection = connect_to_remote_server($selectServer);
           if ($connection) {
             $output = "";
@@ -47,6 +49,27 @@ class InstallMagento extends CI_Controller {
               $stream = ssh2_exec($connection, 'sudo apt-get -y install git');
               $output .= get_output_result_of_shell($stream);
               $stream = ssh2_exec($connection, 'mkdir /var/www/magento;cd /var/www/magento;git clone https://github.com/OpenMage/magento-mirror.git .;chown -R www-data:www-data . ;cd ~;');
+              $output .= get_output_result_of_shell($stream);
+              $stream = ssh2_exec($connection, 'mysql -u root -p'.$mySQLPassword.' -e "create database mag1; GRANT ALL PRIVILEGES ON mag2.* TO mag2@localhost IDENTIFIED BY \'mag@321\'');
+              $output .= get_output_result_of_shell($stream);
+              $stream = ssh2_exec($connection, 'echo -e "<VirtualHost *:80>
+	ServerName localhost
+	ServerAdmin webmaster@localhost
+	DirectoryIndex index.php index.html index.htm
+	DocumentRoot /var/www/magento
+	<Directory /var/www/magento>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        </Directory>
+	<Directory /var/www/magento/.git>
+    Order deny,allow
+    Deny from all
+    </Directory>
+	ErrorLog /var/www/log/error.log
+        CustomLog /var/www/log/access.log combined
+</VirtualHost>"  > /etc/apache2/sites-available/000-default.conf ;
+sudo systemctl restart apache2.service ;
+sudo /etc/init.d/apache2 restart;');
               $output .= get_output_result_of_shell($stream);
               $messageSuccess .= '<strong>Success! Apache WebServer installation</strong>' . $output . '</div>';
               $output = "";
